@@ -12,6 +12,9 @@
       "eas": {
         "projectId": "3d6b7ab2-2f9b-43ab-ac99-4aa1e22c3b7e"
       }
+    },
+    "android": {
+      "package": "com.weslya.mylearningapp"
     }
   }
 }
