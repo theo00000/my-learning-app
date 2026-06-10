@@ -1,26 +1,68 @@
-import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { ActivityIndicator, Text, View } from "react-native";
+import { AuthProvider, useAuth } from "./src/context/AuthContext";
 
-import Login from "./screens/Login";
-import Dashboard from "./screens/Dashboard";
-import Material from "./screens/Material";
-import Register from "./screens/Register";
+import DashboardScreen from "./src/screens/Dashboard";
+import LoginScreen from "./src/screens/Login";
+import MaterialDetailScreen from "./src/screens/Material";
+import RegisterScreen from "./src/screens/Register";
 
-const Stack = createStackNavigator();
+import { colors, globalStyles } from "./src/styles/theme";
 
-export default function App() {
+const Stack = createNativeStackNavigator();
+
+function LoadingScreen() {
+  return (
+    <View style={globalStyles.center}>
+      <ActivityIndicator size="large" color={colors.primary} />
+      <Text style={{ marginTop: 14, color: colors.muted, fontWeight: "700" }}>
+        Checking your session...
+      </Text>
+    </View>
+  );
+}
+
+function RootNavigator() {
+  const { isAuthenticated, isCheckingSession } = useAuth();
+
+  if (isCheckingSession) {
+    return <LoadingScreen />;
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{ headerShown: false }}
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: colors.background,
+          },
+        }}
       >
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="Material" component={Material} />
+        {isAuthenticated ? (
+          <>
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen
+              name="MaterialDetail"
+              component={MaterialDetailScreen}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <RootNavigator />
+    </AuthProvider>
   );
 }
