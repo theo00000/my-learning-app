@@ -1,8 +1,10 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,9 +12,7 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import { colors, globalStyles } from "../styles/theme";
-
-const gradeOptions = ["Grade 10", "Grade 11", "Grade 12"];
+import { colors, globalStyles, shadows } from "../styles/theme";
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -21,57 +21,36 @@ export default function RegisterScreen({ navigation }) {
     name: "",
     email: "",
     password: "",
-    grade: "Grade 12",
+    grade: "",
     school: "",
   });
 
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const updateField = (name, value) => {
-    setForm((current) => ({
-      ...current,
-      [name]: value,
+  const updateField = (key, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
     }));
   };
 
-  const validateForm = () => {
-    if (
-      !form.name ||
-      !form.email ||
-      !form.password ||
-      !form.grade ||
-      !form.school
-    ) {
-      return "All fields are required.";
-    }
-
-    if (form.password.length < 6) {
-      return "Password must be at least 6 characters.";
-    }
-
-    return "";
-  };
-
   const handleRegister = async () => {
-    setError("");
-
-    const validationMessage = validateForm();
-
-    if (validationMessage) {
-      setError(validationMessage);
+    if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
+      setError("Name, email, and password are required.");
       return;
     }
 
     try {
-      setIsSubmitting(true);
+      setIsLoading(true);
+      setError("");
 
       await register({
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim(),
         password: form.password,
-        grade: form.grade,
-        school: form.school,
+        grade: form.grade.trim(),
+        school: form.school.trim(),
       });
     } catch (err) {
       console.log("REGISTER ERROR:", {
@@ -81,197 +60,224 @@ export default function RegisterScreen({ navigation }) {
       });
 
       setError(
-        err?.response?.data?.msg ||
-          err?.response?.data?.message ||
-          err.message ||
-          "Register failed. Please try again.",
+        err?.response?.data?.message ||
+          "Registration failed. Please try again.",
       );
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={globalStyles.safeArea}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={globalStyles.screen}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.hero}>
-          <Text style={styles.badge}>Start learning</Text>
-          <Text style={globalStyles.title}>Create your student account.</Text>
-          <Text style={globalStyles.subtitle}>
-            Build a structured learning habit with materials organized by
-            subject and difficulty.
-          </Text>
-        </View>
-
-        <View style={[globalStyles.card, styles.formCard]}>
-          <Text style={styles.formTitle}>Register</Text>
-
-          {error ? (
-            <View style={globalStyles.errorBox}>
-              <Text style={globalStyles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
-          <View>
-            <Text style={globalStyles.label}>Full Name</Text>
-            <TextInput
-              style={globalStyles.input}
-              placeholder="Wesly Rismahadi"
-              value={form.name}
-              onChangeText={(value) => updateField("name", value)}
-            />
-          </View>
-
-          <View>
-            <Text style={globalStyles.label}>Email</Text>
-            <TextInput
-              style={globalStyles.input}
-              placeholder="student@example.com"
-              value={form.email}
-              onChangeText={(value) => updateField("email", value)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View>
-            <Text style={globalStyles.label}>Password</Text>
-            <TextInput
-              style={globalStyles.input}
-              placeholder="Minimum 6 characters"
-              value={form.password}
-              onChangeText={(value) => updateField("password", value)}
-              secureTextEntry
-            />
-          </View>
-
-          <View>
-            <Text style={globalStyles.label}>Grade</Text>
-            <View style={styles.gradeGrid}>
-              {gradeOptions.map((grade) => {
-                const isActive = form.grade === grade;
-
-                return (
-                  <Pressable
-                    key={grade}
-                    style={[
-                      styles.gradeButton,
-                      isActive && styles.gradeButtonActive,
-                    ]}
-                    onPress={() => updateField("grade", grade)}
-                  >
-                    <Text
-                      style={[
-                        styles.gradeButtonText,
-                        isActive && styles.gradeButtonTextActive,
-                      ]}
-                    >
-                      {grade}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <View>
-            <Text style={globalStyles.label}>School</Text>
-            <TextInput
-              style={globalStyles.input}
-              placeholder="Your school name"
-              value={form.school}
-              onChangeText={(value) => updateField("school", value)}
-            />
-          </View>
-
-          <Pressable
-            style={[globalStyles.button, isSubmitting && { opacity: 0.65 }]}
-            onPress={handleRegister}
-            disabled={isSubmitting}
-          >
-            <Text style={globalStyles.buttonText}>
-              {isSubmitting ? "Creating account..." : "Create Account"}
+        <ScrollView
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.hero}>
+            <Text style={styles.heroMini}>Create Account</Text>
+            <Text style={styles.heroTitle}>Start your learning journey 🚀</Text>
+            <Text style={styles.heroSubtitle}>
+              Register as a student and access structured learning materials
+              based on your study goals.
             </Text>
-          </Pressable>
+          </View>
 
-          <Pressable onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.footerText}>
-              Already have an account?{" "}
-              <Text style={styles.footerLink}>Login</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Student Registration</Text>
+            <Text style={styles.cardSubtitle}>
+              Fill in your profile to create a learning account.
             </Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={globalStyles.input}
+                placeholder="Your name"
+                placeholderTextColor={colors.muted}
+                value={form.name}
+                onChangeText={(value) => updateField("name", value)}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={globalStyles.input}
+                placeholder="student@example.com"
+                placeholderTextColor={colors.muted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={form.email}
+                onChangeText={(value) => updateField("email", value)}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={globalStyles.input}
+                placeholder="Minimum 6 characters"
+                placeholderTextColor={colors.muted}
+                secureTextEntry
+                value={form.password}
+                onChangeText={(value) => updateField("password", value)}
+              />
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.formGroup, styles.rowItem]}>
+                <Text style={styles.label}>Grade</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder="12"
+                  placeholderTextColor={colors.muted}
+                  value={form.grade}
+                  onChangeText={(value) => updateField("grade", value)}
+                />
+              </View>
+
+              <View style={[styles.formGroup, styles.rowItem]}>
+                <Text style={styles.label}>School</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder="School"
+                  placeholderTextColor={colors.muted}
+                  value={form.school}
+                  onChangeText={(value) => updateField("school", value)}
+                />
+              </View>
+            </View>
+
+            <Pressable
+              style={({ pressed }) => [
+                globalStyles.button,
+                pressed && styles.pressed,
+              ]}
+              onPress={handleRegister}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={globalStyles.buttonText}>Create Account</Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              style={styles.switchButton}
+              onPress={() => navigation.navigate("Login")}
+            >
+              <Text style={styles.switchText}>
+                Already have an account?{" "}
+                <Text style={styles.switchTextStrong}>Login</Text>
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
     padding: 20,
-    justifyContent: "center",
+    paddingBottom: 40,
   },
   hero: {
-    marginBottom: 24,
+    backgroundColor: colors.primary,
+    borderRadius: 30,
+    padding: 24,
+    marginBottom: 18,
+    ...shadows.card,
   },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#DBEAFE",
-    color: colors.primaryDark,
+  heroMini: {
+    color: "#DBEAFE",
+    fontWeight: "800",
+    marginBottom: 10,
+  },
+  heroTitle: {
+    color: "#FFFFFF",
+    fontSize: 30,
     fontWeight: "900",
-    marginBottom: 14,
+    letterSpacing: -0.7,
   },
-  formCard: {
-    gap: 16,
+  heroSubtitle: {
+    color: "#DBEAFE",
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 10,
   },
-  formTitle: {
-    fontSize: 26,
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 28,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.card,
+  },
+  cardTitle: {
+    fontSize: 23,
     fontWeight: "900",
     color: colors.text,
   },
-  gradeGrid: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  gradeButton: {
-    flex: 1,
-    height: 44,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F8FAFC",
-  },
-  gradeButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  gradeButtonText: {
+  cardSubtitle: {
     color: colors.muted,
-    fontWeight: "900",
-    fontSize: 12,
+    marginTop: 6,
+    marginBottom: 18,
+    lineHeight: 21,
   },
-  gradeButtonTextActive: {
-    color: "#FFFFFF",
+  formGroup: {
+    marginBottom: 14,
   },
-  footerText: {
-    textAlign: "center",
+  label: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: colors.text,
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  rowItem: {
+    flex: 1,
+  },
+  errorBox: {
+    backgroundColor: colors.dangerSoft,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+  },
+  errorText: {
+    color: colors.danger,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  switchButton: {
+    marginTop: 18,
+    alignItems: "center",
+  },
+  switchText: {
     color: colors.muted,
     fontWeight: "600",
   },
-  footerLink: {
+  switchTextStrong: {
     color: colors.primary,
     fontWeight: "900",
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

@@ -1,20 +1,35 @@
 import { StyleSheet } from "react-native";
 
 export const colors = {
-  background: "#F5F7FB",
+  background: "#F4F7FB",
   card: "#FFFFFF",
+  surface: "#F8FAFC",
   primary: "#2563EB",
-  primaryDark: "#1E40AF",
+  primaryDark: "#1E3A8A",
+  primarySoft: "#DBEAFE",
   sky: "#0EA5E9",
-  text: "#102033",
+  text: "#0F172A",
   muted: "#64748B",
-  border: "#DBE3EF",
+  softText: "#94A3B8",
+  border: "#E2E8F0",
   danger: "#B91C1C",
   dangerBg: "#FEF2F2",
-  successBg: "#D1FAE5",
-  successText: "#047857",
+  successBg: "#DCFCE7",
+  successText: "#166534",
   warningBg: "#FEF3C7",
   warningText: "#92400E",
+  purpleBg: "#EDE9FE",
+  purpleText: "#5B21B6",
+};
+
+export const shadows = {
+  card: {
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
 };
 
 export const globalStyles = StyleSheet.create({
@@ -22,10 +37,9 @@ export const globalStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 20,
   },
   center: {
     flex: 1,
@@ -35,10 +49,11 @@ export const globalStyles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "900",
     color: colors.text,
-    lineHeight: 38,
+    lineHeight: 40,
+    letterSpacing: -0.5,
   },
   subtitle: {
     marginTop: 10,
@@ -48,38 +63,37 @@ export const globalStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.card,
-    borderRadius: 24,
+    borderRadius: 28,
     padding: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
+    ...shadows.card,
   },
   input: {
-    height: 52,
+    minHeight: 52,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 18,
     paddingHorizontal: 16,
-    backgroundColor: "#F8FAFC",
+    paddingVertical: 12,
+    backgroundColor: colors.surface,
     color: colors.text,
     fontSize: 15,
+    fontWeight: "600",
   },
   label: {
     fontSize: 13,
     color: colors.text,
-    fontWeight: "800",
+    fontWeight: "900",
     marginBottom: 8,
   },
   button: {
-    height: 54,
+    minHeight: 54,
     borderRadius: 999,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 18,
   },
   buttonText: {
     color: "#FFFFFF",
@@ -87,28 +101,28 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "900",
   },
   ghostButton: {
-    height: 46,
+    minHeight: 46,
     borderRadius: 999,
-    backgroundColor: "#EEF4FF",
+    backgroundColor: colors.primarySoft,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
   },
   ghostButtonText: {
-    color: colors.primary,
+    color: colors.primaryDark,
     fontSize: 14,
     fontWeight: "900",
   },
   errorBox: {
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 18,
     backgroundColor: colors.dangerBg,
     borderWidth: 1,
     borderColor: "#FECACA",
   },
   errorText: {
     color: colors.danger,
-    fontWeight: "700",
+    fontWeight: "800",
     lineHeight: 20,
   },
 });

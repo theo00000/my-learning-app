@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import api from "../services/api";
-import { colors, globalStyles } from "../styles/theme";
+import { colors, globalStyles, shadows } from "../styles/theme";
 
 export default function MaterialDetailScreen({ navigation, route }) {
   const { materialId } = route.params;
@@ -90,6 +90,15 @@ export default function MaterialDetailScreen({ navigation, route }) {
       );
     }
 
+    if (block.startsWith("- ")) {
+      return (
+        <View key={index} style={styles.bulletRow}>
+          <Text style={styles.bulletDot}>•</Text>
+          <Text style={styles.contentParagraph}>{block.replace("- ", "")}</Text>
+        </View>
+      );
+    }
+
     return (
       <Text key={index} style={styles.contentParagraph}>
         {block}
@@ -97,13 +106,18 @@ export default function MaterialDetailScreen({ navigation, route }) {
     );
   };
 
+  const difficultyStyle =
+    material?.difficulty === "Mudah"
+      ? styles.easy
+      : material?.difficulty === "Sulit"
+        ? styles.hard
+        : styles.medium;
+
   if (isLoading) {
     return (
       <View style={globalStyles.center}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 14, color: colors.muted, fontWeight: "700" }}>
-          Loading material detail...
-        </Text>
+        <Text style={styles.loadingText}>Loading material detail...</Text>
       </View>
     );
   }
@@ -138,17 +152,25 @@ export default function MaterialDetailScreen({ navigation, route }) {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backText}>← Back to dashboard</Text>
-        </Pressable>
+        <View style={styles.topBar}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backText}>← Dashboard</Text>
+          </Pressable>
 
-        <View style={styles.detailCard}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoText}>LS</Text>
+          </View>
+        </View>
+
+        <View style={styles.heroCard}>
           <View style={styles.cardTop}>
             <Text style={styles.subjectPill}>{material?.subject}</Text>
-            <Text style={styles.difficultyPill}>{material?.difficulty}</Text>
+            <Text style={[styles.difficultyPill, difficultyStyle]}>
+              {material?.difficulty || "Medium"}
+            </Text>
           </View>
 
           <Text style={styles.title}>{material?.title}</Text>
@@ -158,8 +180,14 @@ export default function MaterialDetailScreen({ navigation, route }) {
             <Text style={styles.metaPill}>
               Category: {material?.category || "General"}
             </Text>
-            <Text style={styles.metaPill}>{material?.duration} minutes</Text>
+            <Text style={styles.metaPill}>
+              {material?.duration || 0} minutes
+            </Text>
           </View>
+        </View>
+
+        <View style={styles.topicCard}>
+          <Text style={styles.smallSectionTitle}>Topics</Text>
 
           <View style={styles.topicList}>
             {(material?.topics || []).map((topic) => (
@@ -172,7 +200,14 @@ export default function MaterialDetailScreen({ navigation, route }) {
 
         <View style={styles.contentCard}>
           <Text style={styles.sectionTitle}>Learning Content</Text>
-          {contentBlocks.map(renderContentBlock)}
+
+          {contentBlocks.length > 0 ? (
+            contentBlocks.map(renderContentBlock)
+          ) : (
+            <Text style={styles.contentParagraph}>
+              No detailed content is available for this material yet.
+            </Text>
+          )}
         </View>
 
         {relatedMaterials.length > 0 ? (
@@ -189,8 +224,13 @@ export default function MaterialDetailScreen({ navigation, route }) {
                   })
                 }
               >
-                <Text style={styles.relatedSubject}>{item.subject}</Text>
+                <View style={styles.relatedTop}>
+                  <Text style={styles.relatedSubject}>{item.subject}</Text>
+                  <Text style={styles.relatedOpen}>Open →</Text>
+                </View>
+
                 <Text style={styles.relatedTitle}>{item.title}</Text>
+
                 <Text style={styles.relatedDescription} numberOfLines={2}>
                   {item.description}
                 </Text>
@@ -206,22 +246,51 @@ export default function MaterialDetailScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 52,
     paddingBottom: 48,
   },
+  loadingText: {
+    marginTop: 14,
+    color: colors.muted,
+    fontWeight: "800",
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
   backButton: {
-    marginBottom: 14,
+    minHeight: 42,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    backgroundColor: colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
   },
   backText: {
-    color: colors.primary,
+    color: colors.primaryDark,
     fontWeight: "900",
   },
-  detailCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
+  logoBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 15,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadows.card,
+  },
+  logoText: {
+    color: "#FFFFFF",
+    fontWeight: "900",
+    fontSize: 15,
+  },
+  heroCard: {
+    backgroundColor: colors.primaryDark,
+    borderRadius: 32,
+    padding: 22,
+    marginBottom: 14,
   },
   cardTop: {
     flexDirection: "row",
@@ -232,75 +301,106 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: "#DBEAFE",
-    color: colors.primaryDark,
+    backgroundColor: "rgba(255,255,255,0.14)",
+    color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "900",
+    overflow: "hidden",
   },
   difficultyPill: {
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: colors.warningBg,
-    color: colors.warningText,
     fontSize: 12,
     fontWeight: "900",
+    overflow: "hidden",
+  },
+  easy: {
+    backgroundColor: colors.successBg,
+    color: colors.successText,
+  },
+  medium: {
+    backgroundColor: colors.warningBg,
+    color: colors.warningText,
+  },
+  hard: {
+    backgroundColor: "#FEE2E2",
+    color: colors.danger,
   },
   title: {
-    marginTop: 16,
-    fontSize: 30,
+    marginTop: 18,
+    fontSize: 34,
     fontWeight: "900",
-    color: colors.text,
-    lineHeight: 36,
+    color: "#FFFFFF",
+    lineHeight: 40,
+    letterSpacing: -0.7,
   },
   description: {
     marginTop: 10,
-    color: colors.muted,
+    color: "rgba(255,255,255,0.78)",
     lineHeight: 23,
+    fontWeight: "600",
   },
   metaList: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 16,
+    marginTop: 18,
   },
   metaPill: {
     paddingHorizontal: 11,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: "#F8FAFC",
-    color: "#475569",
+    backgroundColor: "rgba(255,255,255,0.13)",
+    color: "#FFFFFF",
     fontWeight: "800",
     fontSize: 12,
+    overflow: "hidden",
+  },
+  topicCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 26,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 14,
+    ...shadows.card,
+  },
+  smallSectionTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 10,
   },
   topicList: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
-    marginTop: 14,
+    gap: 7,
   },
   topicPill: {
-    paddingHorizontal: 9,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: colors.surface,
     color: "#475569",
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "800",
+    overflow: "hidden",
   },
   contentCard: {
-    marginTop: 14,
     backgroundColor: "#FFFFFF",
     borderRadius: 28,
     padding: 18,
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadows.card,
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: "900",
     color: colors.text,
     marginBottom: 12,
+    letterSpacing: -0.2,
   },
   contentTitle: {
     fontSize: 24,
@@ -317,42 +417,69 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 6,
   },
+  bulletRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "flex-start",
+  },
+  bulletDot: {
+    color: colors.primary,
+    fontSize: 17,
+    fontWeight: "900",
+    marginTop: 1,
+  },
   contentParagraph: {
+    flex: 1,
     color: "#334155",
     lineHeight: 24,
     marginBottom: 8,
+    fontWeight: "600",
   },
   relatedSection: {
     marginTop: 20,
   },
   relatedCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 22,
+    borderRadius: 24,
     padding: 16,
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: 12,
+    ...shadows.card,
+  },
+  relatedTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginBottom: 10,
   },
   relatedSubject: {
-    alignSelf: "flex-start",
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: "#DBEAFE",
+    backgroundColor: colors.primarySoft,
     color: colors.primaryDark,
     fontSize: 12,
     fontWeight: "900",
-    marginBottom: 10,
+    overflow: "hidden",
+  },
+  relatedOpen: {
+    color: colors.primary,
+    fontWeight: "900",
+    fontSize: 12,
   },
   relatedTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "900",
     color: colors.text,
+    lineHeight: 24,
   },
   relatedDescription: {
     marginTop: 6,
     color: colors.muted,
     lineHeight: 21,
+    fontWeight: "600",
   },
   centerButton: {
     width: "100%",
