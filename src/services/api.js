@@ -1,7 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const API_BASE_URL = "http://192.168.1.3:5000/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
+  "https://learning-support-platform-six.vercel.app/api";
+
+console.log("API BASE URL:", API_BASE_URL);
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
